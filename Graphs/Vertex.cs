@@ -14,16 +14,19 @@ namespace Graphs
 
         public Vertex()
         {
-
+            Color = ConsoleColor.White;
         }
         public Vertex(T value)
         {
             Value = value;
+            Color = ConsoleColor.White;
         }
         public Vertex(T value, Dictionary<Vertex<T>,double> edges)
         {
             Value = value;
             Edges = edges;
         }
+
+        public ConsoleColor Color = ConsoleColor.White;
     }
 }

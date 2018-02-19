@@ -57,12 +57,55 @@ namespace Graphs
                     s = s.Remove(0, 1);
                     radius = int.Parse(s);
                 }
+                else if(s[0] == 'D')
+                {
+                    s = s.Remove(0, 1);
+                    Vertex<int> v = graph.Search(int.Parse(s), SearchType.DepthFirst);
+                    if (v != null) { v.Color = ConsoleColor.Red; }
+                }
+                else if(s[0] == 'B')
+                {
+                    s = s.Remove(0, 1);
+                    Vertex<int> v = graph.Search(int.Parse(s), SearchType.BreadthFirst);
+                    if (v != null) { v.Color = ConsoleColor.Red; }
+                }
+                else if(s[0] == 'g')
+                {
+                    s = s.Remove(0, 1);
+                    string[] param = s.Split(';');
+                    int[] vals = UniqueRandom(int.Parse(param[0]), int.Parse(param[1]), int.Parse(param[2]));
+                    for(int i = 0; i < vals.Length; i++)
+                    {
+                        graph.Add(vals[i]);
+                    }
+                    int[] vals2 = UniqueRandom(int.Parse(param[0]), int.Parse(param[1]), int.Parse(param[3]));
+                    for(int i = 1; i < vals2.Length; i++)
+                    {
+                        graph.AddEdge(vals2[i - 1], vals2[i]);
+                    }
+
+                }
                 Visualize(graph, radius);
             }
 
         }
 
+        static int[] UniqueRandom(int min, int max, int number)
+        {
+            Random rand = new Random();
+            int[] nums = new int[number];
 
+            for(int i = 0; i < number; i++)
+            {
+                int val = 0;
+                do
+                {
+                    val = rand.Next(min, max);
+                } while (nums.Contains(val));
+                nums[i] = val;
+            }
+            return nums;
+        }
 
         static void Visualize(Graph<int> graph, int radius)
         {
@@ -77,7 +120,9 @@ namespace Graphs
                 int finalY = (int)(y * radius + radius + border);
                 positions.Add(graph.Vertices[i], new Point(finalX, finalY));
                 Console.SetCursorPosition(finalX, finalY);
+                Console.ForegroundColor = graph.Vertices[i].Color;
                 Console.Write(graph.Vertices[i].Value);
+                graph.Vertices[i].Color = ConsoleColor.White;
             }
 
             for (int i = 0; i < graph.Vertices.Count; i++)
@@ -109,7 +154,7 @@ namespace Graphs
                 {
                     Console.ForegroundColor = ConsoleColor.Gray;
                 }
-                if ((int)x != (int)x1 && (int)x != (int)x2 && (int)y != (int)y1 && (int)y != (int)y2)
+                if (((int)x != (int)x1 && (int)y != (int)y1) || ((int)x != (int)x2 && (int)y != (int)y2))
                 {
                     Console.Write("█");
                 }
