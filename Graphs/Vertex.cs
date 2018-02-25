@@ -28,5 +28,9 @@ namespace Graphs
         }
 
         public ConsoleColor Color = ConsoleColor.White;
+
+        public double Cost = -1;
+
+        public Vertex<T> LastVisited;
     }
 }

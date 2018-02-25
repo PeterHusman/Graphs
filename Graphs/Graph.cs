@@ -55,6 +55,71 @@ namespace Graphs
             AddEdge(Search(a, SearchType.ListSearch), Search(b, SearchType.ListSearch), directed, weight);
         }
 
+        public Stack<Vertex<T>> Pathfind(T start, T end, PathfindType type)
+        {
+            return Pathfind(Search(start), Search(end), type);
+        }
+
+        public Stack<Vertex<T>> Pathfind(Vertex<T> start, Vertex<T> end, PathfindType type)
+        {
+            InitializeCosts();
+            start.Cost = 0;
+            List<Vertex<T>> verticesToUse = new List<Vertex<T>> { start };
+            List<Vertex<T>> visited = new List<Vertex<T>>();
+            while(true)
+            {
+                Vertex<T> lowestCost = new Vertex<T>();
+                lowestCost.Cost = double.PositiveInfinity;
+                foreach(Vertex<T> v in verticesToUse)
+                {
+                    if(v.Cost < lowestCost.Cost)
+                    {
+                        lowestCost = v;
+                    }
+                }
+                if(lowestCost.Value.Equals(end.Value))
+                {
+                    Vertex<T> current = end;
+                    Stack<Vertex<T>> path = new Stack<Vertex<T>>();
+                    do
+                    {
+                        path.Push(current);
+                        current = current.LastVisited;
+                    } while (current != start);
+                    path.Push(start);
+                    return path;
+                }
+                else
+                {
+                    double heuristic()
+                    {
+                        if(type == PathfindType.Dijkstra) { return 0; }
+                        return 0;
+                    }
+                    visited.Add(lowestCost);
+                    foreach (KeyValuePair<Vertex<T>, double> edge in lowestCost.Edges)
+                    {
+                        if (!visited.Contains(edge.Key))
+                        {
+                            edge.Key.Cost = lowestCost.Cost + edge.Value + heuristic();
+                            edge.Key.LastVisited = lowestCost;
+                            verticesToUse.Add(edge.Key);
+                        }
+                    }
+                    verticesToUse.Remove(lowestCost);
+                }
+            }
+        }
+
+        void InitializeCosts()
+        {
+            foreach(Vertex<T> v in Vertices)
+            {
+                v.Cost = -1;
+            }
+        }
+
+
         public void RemoveEdge(Vertex<T> a, Vertex<T> b, bool bothDirections)
         {
             a.Edges.Remove(b);
@@ -185,5 +250,11 @@ namespace Graphs
         DepthFirst = 0,
         BreadthFirst = 1,
         ListSearch = 2
+    }
+
+    public enum PathfindType
+    {
+        Dijkstra = 0,
+        AStar = 1
     }
 }

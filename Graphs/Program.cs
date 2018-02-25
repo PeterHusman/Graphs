@@ -14,8 +14,10 @@ namespace Graphs
             bool beenWarned = false;
             int radius = 10;
             Graph<int> graph = new Graph<int>();
+            string stuffToWrite = "";
             while (true)
             {
+                stuffToWrite = "";
                 string s = Console.ReadLine();
                 if (s[0] == 'i')
                 {
@@ -57,35 +59,55 @@ namespace Graphs
                     s = s.Remove(0, 1);
                     radius = int.Parse(s);
                 }
-                else if(s[0] == 'D')
+                else if (s[0] == 's')
                 {
                     s = s.Remove(0, 1);
-                    Vertex<int> v = graph.Search(int.Parse(s), SearchType.DepthFirst);
-                    if (v != null) { v.Color = ConsoleColor.Red; }
+                    if (s[0] == 'D')
+                    {
+                        s = s.Remove(0, 1);
+                        Vertex<int> v = graph.Search(int.Parse(s), SearchType.DepthFirst);
+                        if (v != null) { v.Color = ConsoleColor.Red; }
+                    }
+                    else if (s[0] == 'B')
+                    {
+                        s = s.Remove(0, 1);
+                        Vertex<int> v = graph.Search(int.Parse(s), SearchType.BreadthFirst);
+                        if (v != null) { v.Color = ConsoleColor.Red; }
+                    }
                 }
-                else if(s[0] == 'B')
-                {
-                    s = s.Remove(0, 1);
-                    Vertex<int> v = graph.Search(int.Parse(s), SearchType.BreadthFirst);
-                    if (v != null) { v.Color = ConsoleColor.Red; }
-                }
-                else if(s[0] == 'g')
+                else if (s[0] == 'g')
                 {
                     s = s.Remove(0, 1);
                     string[] param = s.Split(';');
                     int[] vals = UniqueRandom(int.Parse(param[0]), int.Parse(param[1]), int.Parse(param[2]));
-                    for(int i = 0; i < vals.Length; i++)
+                    for (int i = 0; i < vals.Length; i++)
                     {
                         graph.Add(vals[i]);
                     }
                     int[] vals2 = UniqueRandom(int.Parse(param[0]), int.Parse(param[1]), int.Parse(param[3]));
-                    for(int i = 1; i < vals2.Length; i++)
+                    for (int i = 1; i < vals2.Length; i++)
                     {
                         graph.AddEdge(vals2[i - 1], vals2[i]);
                     }
 
                 }
+                else if(s[0] == 'P')
+                {
+                    s = s.Remove(0, 1);
+                    PathfindType type = s[0] == 'D' ? PathfindType.Dijkstra : PathfindType.AStar;
+                    s = s.Remove(0, 1);
+                    string[] stringVals = s.Split(';');
+                    int[] vals = { int.Parse(stringVals[0]), int.Parse(stringVals[1]) };
+                    Stack<Vertex<int>> path = graph.Pathfind(vals[0], vals[1], type);
+                    while(path.Count > 0)
+                    {
+                        stuffToWrite += path.Pop().Value.ToString() + (path.Count > 0 ? ", " : "");
+                    }
+                }
+                
                 Visualize(graph, radius);
+                Console.SetCursorPosition(0, 0);
+                Console.Write(stuffToWrite);
             }
 
         }
@@ -95,7 +117,7 @@ namespace Graphs
             Random rand = new Random();
             int[] nums = new int[number];
 
-            for(int i = 0; i < number; i++)
+            for (int i = 0; i < number; i++)
             {
                 int val = 0;
                 do
@@ -119,10 +141,6 @@ namespace Graphs
                 int finalX = (int)(x * radius + radius + border);
                 int finalY = (int)(y * radius + radius + border);
                 positions.Add(graph.Vertices[i], new Point(finalX, finalY));
-                Console.SetCursorPosition(finalX, finalY);
-                Console.ForegroundColor = graph.Vertices[i].Color;
-                Console.Write(graph.Vertices[i].Value);
-                graph.Vertices[i].Color = ConsoleColor.White;
             }
 
             for (int i = 0; i < graph.Vertices.Count; i++)
@@ -131,6 +149,14 @@ namespace Graphs
                 {
                     VisualizeLine(positions[graph.Vertices[i]].X, positions[graph.Vertices[i]].Y, positions[graph.Vertices[i].Edges.Keys.ToArray<Vertex<int>>()[j]].X, positions[graph.Vertices[i].Edges.Keys.ToArray<Vertex<int>>()[j]].Y, !graph.Vertices[i].Edges.Keys.ToArray()[j].Edges.ContainsKey(graph.Vertices[i]));
                 }
+            }
+
+            for (int i = 0; i < graph.Vertices.Count; i++)
+            {
+                Console.SetCursorPosition(positions[graph.Vertices[i]].X, positions[graph.Vertices[i]].Y);
+                Console.ForegroundColor = graph.Vertices[i].Color;
+                Console.Write(graph.Vertices[i].Value);
+                graph.Vertices[i].Color = ConsoleColor.White;
             }
 
 
@@ -154,7 +180,7 @@ namespace Graphs
                 {
                     Console.ForegroundColor = ConsoleColor.Gray;
                 }
-                if (((int)x != (int)x1 && (int)y != (int)y1) || ((int)x != (int)x2 && (int)y != (int)y2))
+                if (true)//!(((int)x == (int)x1 && (int)y == (int)y1) || ((int)x == (int)x2 && (int)y == (int)y2)))
                 {
                     Console.Write("█");
                 }
