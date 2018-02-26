@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,103 +12,178 @@ namespace Graphs
     {
         static void Main(string[] args)
         {
-            bool beenWarned = false;
-            int radius = 10;
-            Graph<int> graph = new Graph<int>();
-            string stuffToWrite = "";
-            while (true)
+            string prgrmChooser = Console.ReadLine();
+            if(prgrmChooser == "a*")
             {
-                stuffToWrite = "";
-                string s = Console.ReadLine();
-                if (s[0] == 'i')
+                Console.Clear();
+                Graph<Vector2> graph = new Graph<Vector2>();
+                string file = File.ReadAllText("AStarEnvironment.txt");
+                Vector2 pos = Vector2.Zero;
+                Vector2 startPos = Vector2.Zero;
+                Vector2 endPos = Vector2.Zero;
+                for(int i = 0; i < file.Length; i++)
                 {
-                    s = s.Remove(0, 1);
-                    if (graph.Search(int.Parse(s)) == null)
+                    if(file[i] == ' ' || file[i] == 'S' || file[i] == 'E')
                     {
-                        graph.Add(int.Parse(s));
+                        graph.Add(pos);
+                        if (graph.ContainsValue(new Vector2(pos.X - 1, pos.Y)))
+                        {
+                            graph.AddEdge(pos, new Vector2(pos.X - 1, pos.Y));
+                        }
+                        if (graph.ContainsValue(new Vector2(pos.X, pos.Y - 1)))
+                        {
+                            graph.AddEdge(pos, new Vector2(pos.X, pos.Y - 1));
+                        }
+                        if(file[i] == 'S')
+                        {
+                            startPos = pos;
+                        }
+                        else if(file[i] == 'E')
+                        {
+                            endPos = pos;
+                        }
                     }
-                    else if (!beenWarned)
+                    else if(file[i] == '\n')
                     {
-                        Console.WriteLine("No repeats!");
-                        beenWarned = true;
-                        continue;
+                        pos.Y++;
+                        pos.X = -1;
                     }
-                    else
-                    {
-                        throw new Exception("I said no repeats!");
-                    }
+                    pos.X++;
                 }
-                else if (s[0] == 'd')
+                Console.WriteLine(file);
+                Console.ReadLine();
+                Stack<Vertex<Vector2>> path = graph.Pathfind(startPos, endPos, (Vertex<Vector2> a) => { return (endPos.X - a.Value.X) + (endPos.Y - a.Value.Y); });
+                while(path.Count > 0)
                 {
-                    s = s.Remove(0, 1);
-                    graph.Remove(int.Parse(s));
+                    Vector2 pos2 = path.Pop().Value;
+                    Console.SetCursorPosition((int)pos2.X, (int)pos2.Y);
+                    Console.Write('=');
                 }
-                else if (s[0] == 'e')
+
+            }
+            else if (prgrmChooser == "graph")
+            {
+                bool beenWarned = false;
+                int radius = 10;
+                Graph<int> graph = new Graph<int>();
+                string stuffToWrite = "";
+                while (true)
                 {
-                    s = s.Remove(0, 1);
-                    string[] vals = s.Split(';');
-                    graph.AddEdge(int.Parse(vals[0]), int.Parse(vals[1]), vals.Length >= 3 ? vals[2] == "d" : false, vals.Length >= 4 ? double.Parse(vals[3]) : 1);
-                }
-                else if (s[0] == 'r')
-                {
-                    s = s.Remove(0, 1);
-                    string[] vals = s.Split(';');
-                    graph.RemoveEdge(int.Parse(vals[0]), int.Parse(vals[1]), vals.Length >= 3 ? vals[2] == "u" : true);
-                }
-                else if (s[0] == 'R')
-                {
-                    s = s.Remove(0, 1);
-                    radius = int.Parse(s);
-                }
-                else if (s[0] == 's')
-                {
-                    s = s.Remove(0, 1);
-                    if (s[0] == 'D')
+                    stuffToWrite = "";
+                    string s = Console.ReadLine();
+                    if (s[0] == 'i')
                     {
                         s = s.Remove(0, 1);
-                        Vertex<int> v = graph.Search(int.Parse(s), SearchType.DepthFirst);
-                        if (v != null) { v.Color = ConsoleColor.Red; }
+                        if (graph.Search(int.Parse(s)) == null)
+                        {
+                            graph.Add(int.Parse(s));
+                        }
+                        else if (!beenWarned)
+                        {
+                            Console.WriteLine("No repeats!");
+                            beenWarned = true;
+                            continue;
+                        }
+                        else
+                        {
+                            throw new Exception("I said no repeats!");
+                        }
                     }
-                    else if (s[0] == 'B')
+                    else if (s[0] == 'd')
                     {
                         s = s.Remove(0, 1);
-                        Vertex<int> v = graph.Search(int.Parse(s), SearchType.BreadthFirst);
-                        if (v != null) { v.Color = ConsoleColor.Red; }
+                        graph.Remove(int.Parse(s));
                     }
-                }
-                else if (s[0] == 'g')
-                {
-                    s = s.Remove(0, 1);
-                    string[] param = s.Split(';');
-                    int[] vals = UniqueRandom(int.Parse(param[0]), int.Parse(param[1]), int.Parse(param[2]));
-                    for (int i = 0; i < vals.Length; i++)
+                    else if (s[0] == 'e')
                     {
-                        graph.Add(vals[i]);
+                        s = s.Remove(0, 1);
+                        string[] vals = s.Split(';');
+                        graph.AddEdge(int.Parse(vals[0]), int.Parse(vals[1]), vals.Length >= 3 ? vals[2] == "d" : false, vals.Length >= 4 ? double.Parse(vals[3]) : 1);
                     }
-                    int[] vals2 = UniqueRandom(int.Parse(param[0]), int.Parse(param[1]), int.Parse(param[3]));
-                    for (int i = 1; i < vals2.Length; i++)
+                    else if (s[0] == 'r')
                     {
-                        graph.AddEdge(vals2[i - 1], vals2[i]);
+                        s = s.Remove(0, 1);
+                        string[] vals = s.Split(';');
+                        graph.RemoveEdge(int.Parse(vals[0]), int.Parse(vals[1]), vals.Length >= 3 ? vals[2] == "u" : true);
+                    }
+                    else if (s[0] == 'R')
+                    {
+                        s = s.Remove(0, 1);
+                        radius = int.Parse(s);
+                    }
+                    else if (s[0] == 's')
+                    {
+                        s = s.Remove(0, 1);
+                        if (s[0] == 'D')
+                        {
+                            s = s.Remove(0, 1);
+                            Vertex<int> v = graph.Search(int.Parse(s), SearchType.DepthFirst);
+                            if (v != null) { v.Color = ConsoleColor.Red; }
+                        }
+                        else if (s[0] == 'B')
+                        {
+                            s = s.Remove(0, 1);
+                            Vertex<int> v = graph.Search(int.Parse(s), SearchType.BreadthFirst);
+                            if (v != null) { v.Color = ConsoleColor.Red; }
+                        }
+                    }
+                    else if (s[0] == 'g')
+                    {
+                        s = s.Remove(0, 1);
+                        string[] param = s.Split(';');
+                        int[] vals = UniqueRandom(int.Parse(param[0]), int.Parse(param[1]), int.Parse(param[2]));
+                        for (int i = 0; i < vals.Length; i++)
+                        {
+                            graph.Add(vals[i]);
+                        }
+                        int[] vals2 = UniqueRandom(int.Parse(param[0]), int.Parse(param[1]), int.Parse(param[3]));
+                        for (int i = 1; i < vals2.Length; i++)
+                        {
+                            graph.AddEdge(vals2[i - 1], vals2[i]);
+                        }
+
+                    }
+                    else if (s[0] == 'P')
+                    {
+                        s = s.Remove(0, 1);
+                        Func<Vertex<int>, double> a = (Vertex<int> c) => { return 0; };
+                        Func<Vertex<int>, double> heuristic = s[0] == 'D' ? a : (Vertex<int> b) => { return 0; };
+                        graph.Pathfind(new Vertex<int>(), new Vertex<int>(), a);
+                        s = s.Remove(0, 1);
+                        string[] stringVals = s.Split(';');
+                        int[] vals = { int.Parse(stringVals[0]), int.Parse(stringVals[1]) };
+                        Stack<Vertex<int>> path = graph.Pathfind(vals[0], vals[1]);
+                        while (path.Count > 0)
+                        {
+                            stuffToWrite += path.Pop().Value.ToString() + (path.Count > 0 ? ", " : "");
+                        }
+                    }
+                    else if (s[0] == 'p')
+                    {
+                        s = s.Remove(0, 1);
+                        int id = int.Parse(s);
+                        if (id == 1)
+                        {
+                            graph.Vertices = new List<Vertex<int>>();
+                            for (int i = 0; i < 6; i++)
+                            {
+                                graph.Add(i);
+                            }
+                            graph.AddEdge(0, 1, true, 9);
+                            graph.AddEdge(1, 2, true, 2);
+                            graph.AddEdge(0, 3, true, 8);
+                            graph.AddEdge(3, 4, true, 2);
+                            graph.AddEdge(3, 5, true, 16);
+                            graph.AddEdge(4, 5, true, 4);
+                        }
+
                     }
 
+                    Visualize(graph, radius);
+                    Console.SetCursorPosition(0, 0);
+                    Console.Write(stuffToWrite);
+
                 }
-                else if(s[0] == 'P')
-                {
-                    s = s.Remove(0, 1);
-                    PathfindType type = s[0] == 'D' ? PathfindType.Dijkstra : PathfindType.AStar;
-                    s = s.Remove(0, 1);
-                    string[] stringVals = s.Split(';');
-                    int[] vals = { int.Parse(stringVals[0]), int.Parse(stringVals[1]) };
-                    Stack<Vertex<int>> path = graph.Pathfind(vals[0], vals[1], type);
-                    while(path.Count > 0)
-                    {
-                        stuffToWrite += path.Pop().Value.ToString() + (path.Count > 0 ? ", " : "");
-                    }
-                }
-                
-                Visualize(graph, radius);
-                Console.SetCursorPosition(0, 0);
-                Console.Write(stuffToWrite);
             }
 
         }
@@ -147,7 +223,7 @@ namespace Graphs
             {
                 for (int j = 0; j < graph.Vertices[i].Edges.Count; j++)
                 {
-                    VisualizeLine(positions[graph.Vertices[i]].X, positions[graph.Vertices[i]].Y, positions[graph.Vertices[i].Edges.Keys.ToArray<Vertex<int>>()[j]].X, positions[graph.Vertices[i].Edges.Keys.ToArray<Vertex<int>>()[j]].Y, !graph.Vertices[i].Edges.Keys.ToArray()[j].Edges.ContainsKey(graph.Vertices[i]));
+                    VisualizeLine(positions[graph.Vertices[i]].X, positions[graph.Vertices[i]].Y, positions[graph.Vertices[i].Edges.Keys.ToArray<Vertex<int>>()[j]].X, positions[graph.Vertices[i].Edges.Keys.ToArray<Vertex<int>>()[j]].Y, !graph.Vertices[i].Edges.Keys.ToArray()[j].Edges.ContainsKey(graph.Vertices[i]), graph.Vertices[i].Edges.Values.ToArray()[j]);
                 }
             }
 
@@ -162,7 +238,7 @@ namespace Graphs
 
         }
 
-        static void VisualizeLine(float x1, float y1, float x2, float y2, bool directed)
+        static void VisualizeLine(float x1, float y1, float x2, float y2, bool directed, double weight)
         {
             float x = 0;
             float y = 0;
@@ -180,10 +256,14 @@ namespace Graphs
                 {
                     Console.ForegroundColor = ConsoleColor.Gray;
                 }
-                if (true)//!(((int)x == (int)x1 && (int)y == (int)y1) || ((int)x == (int)x2 && (int)y == (int)y2)))
+
+                Console.Write("█");
+                if(i == iterations/2)
                 {
-                    Console.Write("█");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write(weight.ToString());
                 }
+
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }

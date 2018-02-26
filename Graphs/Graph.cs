@@ -33,9 +33,9 @@ namespace Graphs
 
         public void Remove(T val)
         {
-            foreach(Vertex<T> v in Vertices)
+            foreach (Vertex<T> v in Vertices)
             {
-                if(v.Value.Equals(val))
+                if (v.Value.Equals(val))
                 {
                     Remove(v);
                     return;
@@ -43,10 +43,15 @@ namespace Graphs
             }
         }
 
+        public bool ContainsValue(T val)
+        {
+            return Search(val) == null;
+        }
+
         public void AddEdge(Vertex<T> a, Vertex<T> b, bool directed = false, double weight = 1)
         {
             a.Edges.Add(b, weight);
-            if(directed) { return; }
+            if (directed) { return; }
             b.Edges.Add(a, weight);
         }
 
@@ -55,29 +60,69 @@ namespace Graphs
             AddEdge(Search(a, SearchType.ListSearch), Search(b, SearchType.ListSearch), directed, weight);
         }
 
-        public Stack<Vertex<T>> Pathfind(T start, T end, PathfindType type)
+        /// <summary>
+        /// A* algorithm. If heuristic returns 0, it is equivalent to Dijkstra's algorithm.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="heuristic"></param>
+        /// <returns></returns>
+        public Stack<Vertex<T>> Pathfind(T start, T end, Func<Vertex<T>, double> heuristic)
         {
-            return Pathfind(Search(start), Search(end), type);
+            return Pathfind(Search(start), Search(end), heuristic);
         }
 
-        public Stack<Vertex<T>> Pathfind(Vertex<T> start, Vertex<T> end, PathfindType type)
+
+        /// <summary>
+        /// Dijkstra's algorithm
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public Stack<Vertex<T>> Pathfind(T start, T end)
+        {
+            return Pathfind(Search(start), Search(end), (Vertex<T> a) => { return 0; });
+        }
+
+
+        /// <summary>
+        /// Dijkstra's algorithm
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public Stack<Vertex<T>> Pathfind(Vertex<T> start, Vertex<T> end)
+        {
+            return Pathfind(start, end, (Vertex<T> a) => { return 0; } );
+        }
+
+
+        /// <summary>
+        /// A* algorithm. If heuristic returns 0, it is equivalent to Dijkstra's algorithm.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="type"></param>
+        /// <param name="heuristic"></param>
+        /// <returns></returns>
+        public Stack<Vertex<T>> Pathfind(Vertex<T> start, Vertex<T> end, Func<Vertex<T>, double> heuristic)
         {
             InitializeCosts();
             start.Cost = 0;
             List<Vertex<T>> verticesToUse = new List<Vertex<T>> { start };
             List<Vertex<T>> visited = new List<Vertex<T>>();
-            while(true)
+            while (true)
             {
                 Vertex<T> lowestCost = new Vertex<T>();
                 lowestCost.Cost = double.PositiveInfinity;
-                foreach(Vertex<T> v in verticesToUse)
+                foreach (Vertex<T> v in verticesToUse)
                 {
-                    if(v.Cost < lowestCost.Cost)
+                    if (v.Cost < lowestCost.Cost)
                     {
                         lowestCost = v;
                     }
                 }
-                if(lowestCost.Value.Equals(end.Value))
+                if (lowestCost.Value.Equals(end.Value))
                 {
                     Vertex<T> current = end;
                     Stack<Vertex<T>> path = new Stack<Vertex<T>>();
@@ -91,17 +136,12 @@ namespace Graphs
                 }
                 else
                 {
-                    double heuristic()
-                    {
-                        if(type == PathfindType.Dijkstra) { return 0; }
-                        return 0;
-                    }
                     visited.Add(lowestCost);
                     foreach (KeyValuePair<Vertex<T>, double> edge in lowestCost.Edges)
                     {
                         if (!visited.Contains(edge.Key))
                         {
-                            edge.Key.Cost = lowestCost.Cost + edge.Value + heuristic();
+                            edge.Key.Cost = lowestCost.Cost + edge.Value + heuristic(edge.Key);
                             edge.Key.LastVisited = lowestCost;
                             verticesToUse.Add(edge.Key);
                         }
@@ -113,7 +153,7 @@ namespace Graphs
 
         void InitializeCosts()
         {
-            foreach(Vertex<T> v in Vertices)
+            foreach (Vertex<T> v in Vertices)
             {
                 v.Cost = -1;
             }
@@ -134,9 +174,9 @@ namespace Graphs
 
         public void Remove(Vertex<T> v)
         {
-            foreach(Vertex<T> current in Vertices)
+            foreach (Vertex<T> current in Vertices)
             {
-                if(current.Edges.ContainsKey(v))
+                if (current.Edges.ContainsKey(v))
                 {
                     current.Edges.Remove(v);
                 }
@@ -157,9 +197,9 @@ namespace Graphs
             }
             else
             {
-                foreach(Vertex<T> v in Vertices)
+                foreach (Vertex<T> v in Vertices)
                 {
-                    if(v.Value.Equals(val))
+                    if (v.Value.Equals(val))
                     {
                         return v;
                     }
@@ -175,7 +215,7 @@ namespace Graphs
             HashSet<Vertex<T>> visited = new HashSet<Vertex<T>>();
             Stack<Vertex<T>> stack = new Stack<Vertex<T>>();
             stack.Push(start);
-            if(start.Value.Equals(end))
+            if (start.Value.Equals(end))
             {
                 return start;
             }
@@ -210,21 +250,21 @@ namespace Graphs
             HashSet<Vertex<T>> visited = new HashSet<Vertex<T>>();
             Queue<Vertex<T>> queue = new Queue<Vertex<T>>();
             queue.Enqueue(start);
-            if(start.Value.Equals(end))
+            if (start.Value.Equals(end))
             {
                 return start;
             }
-            while(queue.Count > 0)
+            while (queue.Count > 0)
             {
                 Vertex<T> vert = queue.Dequeue();
                 visited.Add(vert);
-                foreach(Vertex<T> nextToAdd in vert.Edges.Keys)
+                foreach (Vertex<T> nextToAdd in vert.Edges.Keys)
                 {
-                    if(nextToAdd.Value.Equals(end))
+                    if (nextToAdd.Value.Equals(end))
                     {
                         return nextToAdd;
                     }
-                    if(!visited.Contains(nextToAdd))
+                    if (!visited.Contains(nextToAdd))
                     {
                         queue.Enqueue(nextToAdd);
                     }
@@ -250,11 +290,5 @@ namespace Graphs
         DepthFirst = 0,
         BreadthFirst = 1,
         ListSearch = 2
-    }
-
-    public enum PathfindType
-    {
-        Dijkstra = 0,
-        AStar = 1
     }
 }
