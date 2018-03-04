@@ -45,7 +45,7 @@ namespace Graphs
 
         public bool ContainsValue(T val)
         {
-            return Search(val) == null;
+            return Search(val) != null;
         }
 
         public void AddEdge(Vertex<T> a, Vertex<T> b, bool directed = false, double weight = 1)
@@ -55,9 +55,9 @@ namespace Graphs
             b.Edges.Add(a, weight);
         }
 
-        public void AddEdge(T a, T b, bool directed = false, double weight = 1)
+        public void AddEdge(T a, T b, bool directed = false, double weight = 1, SearchType searchType = SearchType.ListSearch)
         {
-            AddEdge(Search(a, SearchType.ListSearch), Search(b, SearchType.ListSearch), directed, weight);
+            AddEdge(Search(a, searchType), Search(b, searchType), directed, weight);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Graphs
         /// <returns></returns>
         public Stack<Vertex<T>> Pathfind(Vertex<T> start, Vertex<T> end)
         {
-            return Pathfind(start, end, (Vertex<T> a) => { return 0; } );
+            return Pathfind(start, end, (Vertex<T> a) => { return 0; });
         }
 
 
@@ -115,6 +115,7 @@ namespace Graphs
             {
                 Vertex<T> lowestCost = new Vertex<T>();
                 lowestCost.Cost = double.PositiveInfinity;
+
                 foreach (Vertex<T> v in verticesToUse)
                 {
                     if (v.Cost < lowestCost.Cost)
@@ -139,11 +140,15 @@ namespace Graphs
                     visited.Add(lowestCost);
                     foreach (KeyValuePair<Vertex<T>, double> edge in lowestCost.Edges)
                     {
-                        if (!visited.Contains(edge.Key))
+                        if (!visited.Contains(edge.Key) || edge.Key.Cost > lowestCost.Cost + edge.Value + heuristic(edge.Key))
                         {
+                           // visited.Remove(edge.Key);
                             edge.Key.Cost = lowestCost.Cost + edge.Value + heuristic(edge.Key);
                             edge.Key.LastVisited = lowestCost;
-                            verticesToUse.Add(edge.Key);
+                            if (!verticesToUse.Contains(edge.Key) && !visited.Contains(edge.Key))
+                            {
+                                verticesToUse.Add(edge.Key);
+                            }
                         }
                     }
                     verticesToUse.Remove(lowestCost);

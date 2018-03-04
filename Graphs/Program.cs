@@ -18,6 +18,7 @@ namespace Graphs
                 Console.Clear();
                 Graph<Vector2> graph = new Graph<Vector2>();
                 string file = File.ReadAllText("AStarEnvironment.txt");
+                Dictionary<Vector2, Vertex<Vector2>> vertices = new Dictionary<Vector2, Vertex<Vector2>>();
                 Vector2 pos = Vector2.Zero;
                 Vector2 startPos = Vector2.Zero;
                 Vector2 endPos = Vector2.Zero;
@@ -26,15 +27,16 @@ namespace Graphs
                     if(file[i] == ' ' || file[i] == 'S' || file[i] == 'E')
                     {
                         graph.Add(pos);
-                        if (graph.ContainsValue(new Vector2(pos.X - 1, pos.Y)))
+                        vertices.Add(pos, graph.Vertices[graph.Vertices.Count - 1]);
+                        if (vertices.ContainsKey(new Vector2(pos.X - 1, pos.Y)))
                         {
-                            graph.AddEdge(pos, new Vector2(pos.X - 1, pos.Y));
+                            graph.AddEdge(vertices[pos], vertices[new Vector2(pos.X - 1, pos.Y)]);
                         }
-                        if (graph.ContainsValue(new Vector2(pos.X, pos.Y - 1)))
+                        if (vertices.ContainsKey(new Vector2(pos.X, pos.Y - 1)))
                         {
-                            graph.AddEdge(pos, new Vector2(pos.X, pos.Y - 1));
+                            graph.AddEdge(vertices[pos], vertices[new Vector2(pos.X, pos.Y - 1)]);
                         }
-                        if(file[i] == 'S')
+                        if (file[i] == 'S')
                         {
                             startPos = pos;
                         }
@@ -59,7 +61,7 @@ namespace Graphs
                     Console.SetCursorPosition((int)pos2.X, (int)pos2.Y);
                     Console.Write('=');
                 }
-
+                Console.ReadKey();
             }
             else if (prgrmChooser == "graph")
             {
