@@ -13,7 +13,7 @@ namespace Graphs
         static void Main(string[] args)
         {
             string prgrmChooser = Console.ReadLine();
-            if(prgrmChooser == "a*")
+            if (prgrmChooser == "a*")
             {
                 Console.Clear();
                 Graph<Vector2> graph = new Graph<Vector2>();
@@ -22,9 +22,9 @@ namespace Graphs
                 Vector2 pos = Vector2.Zero;
                 Vector2 startPos = Vector2.Zero;
                 Vector2 endPos = Vector2.Zero;
-                for(int i = 0; i < file.Length; i++)
+                for (int i = 0; i < file.Length; i++)
                 {
-                    if(file[i] == ' ' || file[i] == 'S' || file[i] == 'E')
+                    if (file[i] == ' ' || file[i] == 'S' || file[i] == 'E')
                     {
                         graph.Add(pos);
                         vertices.Add(pos, graph.Vertices[graph.Vertices.Count - 1]);
@@ -40,12 +40,12 @@ namespace Graphs
                         {
                             startPos = pos;
                         }
-                        else if(file[i] == 'E')
+                        else if (file[i] == 'E')
                         {
                             endPos = pos;
                         }
                     }
-                    else if(file[i] == '\n')
+                    else if (file[i] == '\n')
                     {
                         pos.Y++;
                         pos.X = -1;
@@ -54,8 +54,8 @@ namespace Graphs
                 }
                 Console.WriteLine(file);
                 Console.ReadLine();
-                Stack<Vertex<Vector2>> path = graph.Pathfind(startPos, endPos, (Vertex<Vector2> a) => { return (endPos.X - a.Value.X) + (endPos.Y - a.Value.Y); });
-                while(path.Count > 0)
+                Stack<Vertex<Vector2>> path = graph.Pathfind(startPos, endPos, (Vertex<Vector2> a) => { return (endPos.X - a.Value.X) * (endPos.X - a.Value.X) + (endPos.Y - a.Value.Y) * (endPos.Y - a.Value.Y); });
+                while (path.Count > 0)
                 {
                     Vector2 pos2 = path.Pop().Value;
                     Console.SetCursorPosition((int)pos2.X, (int)pos2.Y);
@@ -260,7 +260,7 @@ namespace Graphs
                 }
 
                 Console.Write("█");
-                if(i == iterations/2)
+                if (i == iterations / 2)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write(weight.ToString());
